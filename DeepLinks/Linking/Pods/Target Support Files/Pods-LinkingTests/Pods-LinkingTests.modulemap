@@ -1,0 +1,6 @@
+framework module Pods_LinkingTests {
+  umbrella header "Pods-LinkingTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
