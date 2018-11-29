@@ -75,12 +75,13 @@ class ProjectViewController: BaseViewController {
         present(deleteAlert, animated: true)
     }
     
-    func editCell(_ value: ProjectModel){
+    func editCell(_ value: ProjectModel, _ index: IndexPath){
         let mainStoryboard = UIStoryboard.init(name: "Main", bundle: nil)
         let addProjectViewController = mainStoryboard.instantiateViewController(withIdentifier: "AddProjectViewController") as! AddProjectViewController
         addProjectViewController.delegate = self
         addProjectViewController.control = false
         addProjectViewController.project = value
+        addProjectViewController.index = index.row
         self.present(addProjectViewController, animated: true, completion: nil)
     }
     
@@ -89,7 +90,13 @@ class ProjectViewController: BaseViewController {
 extension ProjectViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.project.count
+        if self.project.count == 0 {
+            SVProgressHUD.dismiss()
+            return 0
+        }
+        else {
+          return self.project.count
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -115,7 +122,7 @@ extension ProjectViewController: UITableViewDataSource, UITableViewDelegate {
     }
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let editAction = UITableViewRowAction(style: .default, title: "Edit") { action, indexPath in
-            self.editCell(self.project[indexPath.row])
+            self.editCell(self.project[indexPath.row], indexPath)
         }
         let deleteAction = UITableViewRowAction(style: .default, title: "Delete") { action, indexPath in
             if let id = self.project[indexPath.row].id{
@@ -130,15 +137,8 @@ extension ProjectViewController: UITableViewDataSource, UITableViewDelegate {
 }
 
 extension ProjectViewController: ProjectProtocol {
-    func refreshProject(_ model: ProjectModel, _ id: String) {
-        print("refresh")
-        print(model)
-        //// ?????????????????? 
-       // self.project = [model]
-       // self.projectTableView.reloadData()
-        let databaseReference  = Database.database().reference()
-  //      databaseReference.child("Project").child(id).updateChildValues(["ID": model.id ?? "", "Name": model.name ?? "", "Type": model.type ?? "", "Links": model.links ?? [""]])
-       // self.project.remove(at: indexPath.row)
+    func refreshProject(_ model: ProjectModel, _ index: Int) {
+        self.project[index] = model
         self.projectTableView.reloadData()
     }
     

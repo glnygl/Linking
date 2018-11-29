@@ -46,7 +46,6 @@ class AddLinkViewController: BaseViewController {
         
         if control == false {
             self.linkTextView.text = self.project?.links?[index ?? 0]
-         //   self.projectTypeButton.setTitle(self.project?.type, for: .normal)
             self.saveButton.setTitle("Change", for: .normal)
         }
     }
@@ -80,13 +79,11 @@ class AddLinkViewController: BaseViewController {
                         delegate?.refreshLink(self.project ?? ProjectModel.init("","","",[""]))
                     }
         }else {
-          
-            print("editvhjhjkjkll")
-            
+            let value = databaseReference.child("Project").child(self.project?.id ?? "")
+            self.project?.links?[index ?? 0] = self.linkTextView.text
+                value.updateChildValues(["Links": self.project?.links as Any])
         }
-        
         hidePopUp()
-        
     }
     
     @IBAction func cancelButtonPressed(_ sender: UIButton) {

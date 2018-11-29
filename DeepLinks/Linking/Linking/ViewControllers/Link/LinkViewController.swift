@@ -11,12 +11,13 @@ import FirebaseDatabase
 import SVProgressHUD
 
 class LinkViewController: BaseViewController {
-
+    
     @IBOutlet weak var linkTableView: UITableView!
     
     var project: ProjectModel?
     var links: [String]?
     var id: String?
+    var array: [String]?
     
     let databaseReference  = Database.database().reference()
     
@@ -35,7 +36,6 @@ class LinkViewController: BaseViewController {
             if let data  = snapshot.value as? [String : Any] {
                 let links = data["Links"] as? [String]
                 self.links = links
-             //   print(links)
                 self.linkTableView.reloadData()
                 SVProgressHUD.dismiss()
             }
@@ -62,7 +62,6 @@ class LinkViewController: BaseViewController {
     func editCell(_ index: IndexPath){
         let mainStoryboard = UIStoryboard.init(name: "Main", bundle: nil)
         let addLinkViewController = mainStoryboard.instantiateViewController(withIdentifier: "AddLinkViewController") as! AddLinkViewController
-       // addLinkViewController.delegate = self
         addLinkViewController.control = false
         addLinkViewController.index = index.row
         addLinkViewController.project = self.project
@@ -74,6 +73,32 @@ class LinkViewController: BaseViewController {
         let yesAction = UIAlertAction(title: "Yes",
                                       style: .default) {(action) in
                                         print("deleted")
+                                        ////// DELETE LINK
+                                        self.databaseReference.child("Project").child(self.project?.id ?? "").observe(.value, with: { (snapshot) in
+                                            if let data  = snapshot.value as? [String : Any] {
+                                                self.array = data["Links"] as? [String]
+                                                self.array?.remove(at: indexPath.row)
+                                                self.links = self.array
+                                                self.linkTableView.reloadData()
+                                            }
+                                        })
+                                       
+                                       //  value.updateChildValues([["Links": self.links ?? [""]])
+                                        
+                                        
+                                        //                                                var value = self.databaseReference.child("Project").child(self.project?.id ?? "").child("Links").child("\(indexPath.row)")
+                                        //                                                value.removeValue()
+                                        //
+                                        
+//                                          var value = self.databaseReference.child("Project").child(self.project?.id ?? "")
+//                                           value.updateChildValues(["Links": self.links ?? [""]])
+                            
+                                        //   print("Links \(self.links)")
+                                        
+                                        
+                                        //                                        var value = self.databaseReference.child("Project").child(self.project?.id ?? "").child("Links").child("\(indexPath.row)")
+                                        //                                        value.removeValue()
+                                        //                                        print(value)
         }
         let noAction = UIAlertAction(title: "No",
                                      style: .default) {(action) in
@@ -106,9 +131,9 @@ extension LinkViewController: UITableViewDataSource, UITableViewDelegate {
         let url = URL(string: "atasun://garantipay-ile-50-TL-bonus")!
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            }
-        print("selected")
         }
+        print("selected")
+    }
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let editAction = UITableViewRowAction(style: .default, title: "Edit") { action, indexPath in
             self.editCell(indexPath)
@@ -122,7 +147,7 @@ extension LinkViewController: UITableViewDataSource, UITableViewDelegate {
         deleteAction.backgroundColor = UIColor(red:0.82, green:0.00, blue:0.00, alpha:1.0)
         return [deleteAction, editAction]
     }
-    }
+}
 
 extension LinkViewController: LinkProtocol {
     func refreshLink(_ model: ProjectModel) {

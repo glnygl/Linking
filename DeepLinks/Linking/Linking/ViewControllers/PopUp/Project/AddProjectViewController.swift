@@ -8,10 +8,11 @@
 
 import UIKit
 import FirebaseDatabase
+import SVProgressHUD
 import ActionSheetPicker_3_0
 
 protocol ProjectProtocol {
-    func refreshProject(_ model: ProjectModel, _ id: String)
+    func refreshProject(_ model: ProjectModel, _ index: Int)
 }
 
 class AddProjectViewController: BaseViewController{
@@ -28,6 +29,7 @@ class AddProjectViewController: BaseViewController{
     var control: Bool?
     var project: ProjectModel?
     var delegate: ProjectProtocol?
+    var index: Int?
     
     let databaseReference = Database.database().reference()
     
@@ -75,7 +77,22 @@ class AddProjectViewController: BaseViewController{
         }else {
             let value = databaseReference.child("Project").child(self.project?.id ?? "")
             value.setValue(["ID": value.key ?? "", "Name": self.projectNameTextField.text ?? "", "Type": self.projectTypeButton.title(for: .normal) ?? "", "Links": self.project?.links ?? ""])
-           delegate?.refreshProject(self.project ?? ProjectModel.init("","","",[""]), self.project?.id ?? "")
+            
+            SVProgressHUD.show()
+            databaseReference.child("Project").child(self.project?.id ?? "").observe(.value, with: { (snapshot) in
+                if let data  = snapshot.value as? [String : Any] {
+                    let id = data["ID"] as? String
+                    let name = data["Name"] as? String
+                    let type = data["Type"] as? String
+                    let links = data["Links"] as? [String]
+                    let model = ProjectModel.init(id ?? "", name ?? "", type ?? "", links ?? [""])
+                    print("Modelllllllll \(model)")
+                    self.delegate?.refreshProject(model , self.index ?? 0)
+                    SVProgressHUD.dismiss()
+                }
+            })
+           
+          // delegate?.refreshProject(self.project ?? ProjectModel.init("","","",[""]), self.project?.id ?? "")
         }
         hidePopUp()
     }
